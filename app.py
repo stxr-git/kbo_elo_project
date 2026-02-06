@@ -99,48 +99,41 @@ st.divider()
 # -----------------------------------------------------------
 # 4. 팀 선택 (연도 -> 팀 2단계 방식)
 # -----------------------------------------------------------
+# [수정] 4. 팀 선택 섹션 (전체 교체 추천)
 col_home, col_away = st.columns(2)
-seasons = sorted(df['Season'].unique(), reverse=True) # 최신 연도부터
+seasons = sorted(df['Season'].unique(), reverse=True)
 
 # --- [홈 팀 선택] ---
 with col_home:
     st.subheader("🏠 Home Team")
-    # 1단계: 연도 선택
     year_a = st.selectbox("연도 선택", seasons, index=0, key='year_a')
     
-    # 2단계: 해당 연도 팀 필터링 & 고증된 이름 표시
-    teams_a_df = df[df['Season'] == year_a].copy()
+    # 해당 연도 팀 필터링 (Elo 높은 순 정렬)
+    teams_a_df = df[df['Season'] == year_a].sort_values(by='Final_Elo', ascending=False)
     
-    # 선택박스에 보여질 이름: "팀명 (Elo: 점수)"
-    teams_a_df['Label'] = teams_a_df['Real_Name'] + " (" + teams_a_df['Final_Elo'].round(0).astype(str) + ")"
+    # [변경] 복잡한 라벨 생성 없이 'Real_Name'만 바로 사용
+    team_a_name = st.selectbox("팀 선택", teams_a_df['Real_Name'], key='team_a')
     
-    team_a_label = st.selectbox("팀 선택", teams_a_df['Label'], key='team_a')
-    
-    # 선택된 데이터 추출
-    team_a_data = teams_a_df[teams_a_df['Label'] == team_a_label].iloc[0]
+    # 이름으로 데이터 찾기
+    team_a_data = teams_a_df[teams_a_df['Real_Name'] == team_a_name].iloc[0]
 
-    # 스탯 표시
+    # 상세 정보는 선택 후 아래에 표시
     st.info(f"**{year_a} {team_a_data['Real_Name']}**\n\nElo: {team_a_data['Final_Elo']}\nZ: {team_a_data['Z_Score']}")
 
 
 # --- [원정 팀 선택] ---
 with col_away:
     st.subheader("✈️ Away Team")
-    # 1단계: 연도 선택
-    year_b = st.selectbox("연도 선택", seasons, index=1, key='year_b') # 기본값: 작년
+    year_b = st.selectbox("연도 선택", seasons, index=1, key='year_b')
     
-    # 2단계: 해당 연도 팀 필터링
-    teams_b_df = df[df['Season'] == year_b].copy()
-    teams_b_df['Label'] = teams_b_df['Real_Name'] + " (" + teams_b_df['Final_Elo'].round(0).astype(str) + ")"
+    teams_b_df = df[df['Season'] == year_b].sort_values(by='Final_Elo', ascending=False)
     
-    team_b_label = st.selectbox("팀 선택", teams_b_df['Label'], key='team_b')
+    # [변경] 원정팀도 동일하게 적용
+    team_b_name = st.selectbox("팀 선택", teams_b_df['Real_Name'], key='team_b')
     
-    # 선택된 데이터 추출
-    team_b_data = teams_b_df[teams_b_df['Label'] == team_b_label].iloc[0]
+    team_b_data = teams_b_df[teams_b_df['Real_Name'] == team_b_name].iloc[0]
 
-    # 스탯 표시
     st.info(f"**{year_b} {team_b_data['Real_Name']}**\n\nElo: {team_b_data['Final_Elo']}\nZ: {team_b_data['Z_Score']}")
-
 
 # -----------------------------------------------------------
 # 5. 승률 계산 및 결과 표시
